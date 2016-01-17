@@ -16,10 +16,6 @@ type UrlShortener struct {
 	OriginalUrl string
 }
 
-type Shortener interface {
-	short(url string)
-}
-
 func getResponseData(url string) string {
 	response, err := http.Get(url)
 	if err != nil {
