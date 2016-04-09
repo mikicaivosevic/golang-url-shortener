@@ -1,23 +1,24 @@
 package main
 
 import (
-	"net/http"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 )
 
 const (
 	TINY_URL = 1
-	IS_GD = 2
+	IS_GD    = 2
 )
 
 type UrlShortener struct {
-	ShortUrl string
+	ShortUrl    string
 	OriginalUrl string
 }
 
-func getResponseData(url string) string {
-	response, err := http.Get(url)
+func getResponseData(urlOrig string) string {
+	response, err := http.Get(urlOrig)
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -26,25 +27,27 @@ func getResponseData(url string) string {
 	return string(contents)
 }
 
-func tinyUrlShortener(url string) (string, string) {
-	tinyUrl := fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", url)
-	return getResponseData(tinyUrl), url
+func tinyUrlShortener(urlOrig string) (string, string) {
+	escapedUrl := url.QueryEscape(urlOrig)
+	tinyUrl := fmt.Sprintf("http://tinyurl.com/api-create.php?url=%s", escapedUrl)
+	return getResponseData(tinyUrl), urlOrig
 }
 
-func isGdShortener(url string) (string, string) {
-	isGdUrl := fmt.Sprintf("http://is.gd/create.php?url=%s&format=simple", url)
-	return getResponseData(isGdUrl), url
+func isGdShortener(urlOrig string) (string, string) {
+	escapedUrl := url.QueryEscape(urlOrig)
+	isGdUrl := fmt.Sprintf("http://is.gd/create.php?url=%s&format=simple", escapedUrl)
+	return getResponseData(isGdUrl), urlOrig
 }
 
-func (u *UrlShortener) short(url string, shortener int) *UrlShortener {
+func (u *UrlShortener) short(urlOrig string, shortener int) *UrlShortener {
 	switch shortener {
 	case TINY_URL:
-		shortUrl, originalUrl := tinyUrlShortener(url)
+		shortUrl, originalUrl := tinyUrlShortener(urlOrig)
 		u.ShortUrl = shortUrl
 		u.OriginalUrl = originalUrl
 		return u
 	case IS_GD:
-		shortUrl, originalUrl := isGdShortener(url)
+		shortUrl, originalUrl := isGdShortener(urlOrig)
 		u.ShortUrl = shortUrl
 		u.OriginalUrl = originalUrl
 		return u
@@ -52,10 +55,9 @@ func (u *UrlShortener) short(url string, shortener int) *UrlShortener {
 	return u
 }
 
-
-func main()  {
-	url := UrlShortener{}
-	url.short("http://www.mondo.rs", IS_GD)
-	fmt.Println(url.ShortUrl)
-	fmt.Println(url.OriginalUrl)
+func main() {
+	urlOrig := UrlShortener{}
+	urlOrig.short("http://www.mondo.rs", IS_GD)
+	fmt.Println(urlOrig.ShortUrl)
+	fmt.Println(urlOrig.OriginalUrl)
 }
